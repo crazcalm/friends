@@ -1,95 +1,95 @@
 package main
 
 import (
-    "database/sql"
-    "fmt"
-    "time"
-    _ "github.com/mattn/go-sqlite3"
+	"database/sql"
+	"fmt"
+	_ "github.com/mattn/go-sqlite3"
+	"time"
 )
 
 const (
-    DatabaseType = "sqlite3"
-    PathToDatabase = "./test.db"
+	DatabaseType   = "sqlite3"
+	PathToDatabase = "./test.db"
 )
 
-func databaseConnection(databaseType string, pathToDB string) (db *sql.DB){
-    db, err := sql.Open(databaseType, pathToDB)
-    checkErr(err)
+func databaseConnection(databaseType string, pathToDB string) (db *sql.DB) {
+	db, err := sql.Open(databaseType, pathToDB)
+	checkErr(err)
 
-    // Turning on Forgein key support
-    stmt, err := db.Prepare("PRAGMA foreign_keys = ON;")
-    checkErr(err)
-    _, err = stmt.Exec()
-    checkErr(err)
+	// Turning on Forgein key support
+	stmt, err := db.Prepare("PRAGMA foreign_keys = ON;")
+	checkErr(err)
+	_, err = stmt.Exec()
+	checkErr(err)
 
-    return db
+	return db
 }
 
-func main(){
-    db := databaseConnection(DatabaseType, PathToDatabase)
+func main() {
+	db := databaseConnection(DatabaseType, PathToDatabase)
 
-    // insert
-    stmt, err := db.Prepare("INSERT INTO person(name, country) values(?, ?)")
-    checkErr(err)
+	// insert
+	stmt, err := db.Prepare("INSERT INTO person(name, country) values(?, ?)")
+	checkErr(err)
 
-    res, err := stmt.Exec("astaxie", 1)
-    checkErr(err)
+	res, err := stmt.Exec("astaxie", 1)
+	checkErr(err)
 
-    id, err := res.LastInsertId()
-    checkErr(err)
+	id, err := res.LastInsertId()
+	checkErr(err)
 
-    fmt.Printf("id: %d\n", id)
+	fmt.Printf("id: %d\n", id)
 
-    //update
-    stmt, err = db.Prepare("update person set name=? where uid=?")
-    checkErr(err)
+	//update
+	stmt, err = db.Prepare("update person set name=? where uid=?")
+	checkErr(err)
 
-    res, err = stmt.Exec("astaxieupdate", id)
-    checkErr(err)
+	res, err = stmt.Exec("astaxieupdate", id)
+	checkErr(err)
 
-    affect, err := res.RowsAffected()
-    checkErr(err)
+	affect, err := res.RowsAffected()
+	checkErr(err)
 
-    fmt.Print("affected: ")
-    fmt.Println(affect)
+	fmt.Print("affected: ")
+	fmt.Println(affect)
 
-    //query
-    rows, err := db.Query("SELECT * FROM person")
-    checkErr(err)
+	//query
+	rows, err := db.Query("SELECT * FROM person")
+	checkErr(err)
 
-    var uid int
-    var name string
-    var country int
-    var created time.Time
+	var uid int
+	var name string
+	var country int
+	var created time.Time
 
-    for rows.Next() {
-        err = rows.Scan(&uid, &name, &created, &country)
-        checkErr(err)
-        fmt.Println(uid)
-        fmt.Println(name)
-        fmt.Println(country)
-        fmt.Println(created)
-    }
+	for rows.Next() {
+		err = rows.Scan(&uid, &name, &created, &country)
+		checkErr(err)
+		fmt.Println(uid)
+		fmt.Println(name)
+		fmt.Println(country)
+		fmt.Println(created)
+	}
 
-    rows.Close() // good habit to close
+	rows.Close() // good habit to close
 
-    // delete
-    stmt, err = db.Prepare("delete from userinfo where uid=?")
-    checkErr(err)
+	// delete
+	stmt, err = db.Prepare("delete from userinfo where uid=?")
+	checkErr(err)
 
-    res, err = stmt.Exec(id)
-    checkErr(err)
+	res, err = stmt.Exec(id)
+	checkErr(err)
 
-    affect, err = res.RowsAffected()
-    checkErr(err)
+	affect, err = res.RowsAffected()
+	checkErr(err)
 
-    fmt.Println(affect)
+	fmt.Println(affect)
 
-    db.Close()
+	db.Close()
 }
 
 func checkErr(err error) {
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 }
